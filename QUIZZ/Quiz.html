@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kuis Interaktif Sistem Pencernaan</title>
+  <style>
+      * {
+          box-sizing: border-box;
+          margin: 0;
+          padding: 0;
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      body {
+          background: #f0f7f4;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          min-height: 100vh;
+          padding: 20px;
+      }
+
+      .quiz-container {
+          background-color: #ffffff;
+          border-radius: 12px;
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+          width: 100%;
+          max-width: 600px;
+          padding: 30px;
+          position: relative;
+          overflow: hidden;
+      }
+
+      .progress-bar {
+          height: 6px;
+          background-color: #e0e0e0;
+          border-radius: 3px;
+          margin-bottom: 25px;
+          overflow: hidden;
+      }
+
+      .progress-fill {
+          height: 100%;
+          background-color: #2ec4b6;
+          width: 0%;
+          transition: width 0.3s ease;
+      }
+
+      .question-number {
+          font-size: 0.9rem;
+          color: #7f8c8d;
+          font-weight: bold;
+          margin-bottom: 10px;
+          text-transform: uppercase;
+      }
+
+      .question-text {
+          font-size: 1.25rem;
+          color: #2c3e50;
+          margin-bottom: 20px;
+          font-weight: 600;
+          line-height: 1.5;
+      }
+
+      .options-container {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          margin-bottom: 20px;
+      }
+
+      .option-btn {
+          background-color: #f8f9fa;
+          border: 2px solid #e2e8f0;
+          border-radius: 8px;
+          padding: 15px 20px;
+          font-size: 1rem;
+          text-align: left;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          color: #4a5568;
+          font-weight: 500;
+      }
+
+      .option-btn:hover:not([disabled]) {
+          background-color: #edf2f7;
+          border-color: #cbd5e0;
+      }
+
+      .option-btn[disabled] {
+          cursor: not-allowed;
+      }
+
+      .option-btn.correct {
+          background-color: #d4edda !important;
+          border-color: #28a745 !important;
+          color: #155724 !important;
+      }
+
+      .option-btn.wrong {
+          background-color: #f8d7da !important;
+          border-color: #dc3545 !important;
+          color: #721c24 !important;
+      }
+
+      /* Kustomisasi Input untuk Soal Isian dan Esai */
+      .input-container {
+          margin-bottom: 20px;
+      }
+
+      .text-answer-input {
+          width: 100%;
+          padding: 15px;
+          font-size: 1rem;
+          border: 2px solid #e2e8f0;
+          border-radius: 8px;
+          outline: none;
+          color: #2c3e50;
+          transition: border-color 0.2s;
+      }
+
+      .text-answer-input:focus {
+          border-color: #2ec4b6;
+      }
+
+      .text-answer-input[disabled] {
+          background-color: #f8f9fa;
+          color: #7f8c8d;
+          cursor: not-allowed;
+      }
+
+      .submit-answer-btn {
+          background-color: #4a5568;
+          color: white;
+          border: none;
+          padding: 12px 24px;
+          font-size: 0.95rem;
+          font-weight: bold;
+          border-radius: 6px;
+          cursor: pointer;
+          margin-top: 12px;
+          transition: background 0.2s;
+      }
+
+      .submit-answer-btn:hover:not([disabled]) {
+          background-color: #2c3e50;
+      }
+
+      .submit-answer-btn[disabled] {
+          opacity: 0.6;
+          cursor: not-allowed;
+      }
+
+      .feedback-panel {
+          margin-top: 20px;
+          padding: 18px;
+          border-radius: 8px;
+          display: none;
+          animation: fadeIn 0.4s ease;
+      }
+
+      .feedback-panel.correct-style {
+          background-color: #e8f5e9;
+          border-left: 5px solid #2e7d32;
+      }
+
+      .feedback-panel.wrong-style {
+          background-color: #ffebee;
+          border-left: 5px solid #c62828;
+      }
+
+      /* Gaya khusus umpan balik untuk jenis soal esai (netral/edukatif) */
+      .feedback-panel.info-style {
+          background-color: #e3f2fd;
+          border-left: 5px solid #1565c0;
+      }
+
+      .feedback-title {
+          font-weight: bold;
+          font-size: 1.05rem;
+          margin-bottom: 6px;
+      }
+
+      .feedback-title.correct-text { color: #2e7d32; }
+      .feedback-title.wrong-text { color: #c62828; }
+      .feedback-title.info-text { color: #1565c0; }
+
+      .feedback-text {
+          font-size: 0.95rem;
+          color: #455a64;
+          line-height: 1.45;
+      }
+
+      .action-container {
+          margin-top: 25px;
+          display: flex;
+          justify-content: flex-end;
+      }
+
+      .next-btn {
+          background-color: #2ec4b6;
+          color: white;
+          border: none;
+          padding: 12px 28px;
+          font-size: 1rem;
+          font-weight: bold;
+          border-radius: 6px;
+          cursor: pointer;
+          display: none;
+          transition: background 0.2s;
+      }
+
+      .next-btn:hover {
+          background-color: #23a99d;
+      }
+
+      .result-screen {
+          text-align: center;
+          display: none;
+          animation: fadeIn 0.5s ease;
+      }
+
+      .result-title {
+          font-size: 1.8rem;
+          color: #2c3e50;
+          margin-bottom: 15px;
+      }
+
+      .score-display {
+          font-size: 4rem;
+          font-weight: 800;
+          color: #2ec4b6;
+          margin-bottom: 15px;
+      }
+
+      .result-summary {
+          font-size: 1.1rem;
+          color: #616161;
+          margin-bottom: 25px;
+      }
+
+      .restart-btn {
+          background-color: #ff9f1c;
+          color: white;
+          border: none;
+          padding: 12px 30px;
+          font-size: 1rem;
+          font-weight: bold;
+          border-radius: 6px;
+          cursor: pointer;
+          transition: background 0.2s;
+      }
+
+      .restart-btn:hover {
+          background-color: #f18f01;
+      }
+
+      @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+      }
+  </style>
+</head>
+<body>
+
+  <div class="quiz-container">
+      <div id="progress-bar-container" class="progress-bar">
+          <div id="progress-fill" class="progress-fill"></div>
+      </div>
+
+      <div id="quiz-screen">
+          <div id="question-number" class="question-number"></div>
+          <div id="question-text" class="question-text">Memuat pertanyaan...</div>
+          
+          <div id="options-container" class="options-container"></div>
+
+          <div id="feedback-panel" class="feedback-panel">
+              <div id="feedback-title" class="feedback-title"></div>
+              <div id="feedback-text" class="feedback-text"></div>
+          </div>
+
+          <div class="action-container">
+              <button id="next-btn" class="next-btn" onclick="nextQuestion()"></button>
+          </div>
+      </div>
+
+      <div id="result-screen" class="result-screen">
+          <div class="result-title">Kuis Selesai! 🎉</div>
+          <div id="score-display" class="score-display">0</div>
+          <div id="result-summary" class="result-summary"></div>
+          <button class="restart-btn" onclick="restartQuiz()">Ulangi Kuis</button>
+      </div>
+  </div>
+
+  <audio id="audio-correct" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-500.wav" preload="auto"></audio>
+  <audio id="audio-wrong" src="https://assets.mixkit.co/active_storage/sfx/2873/2873-500.wav" preload="auto"></audio>
+
+  <script>
+      // Data Soal Terintegrasi (Pilihan Ganda, Isian Singkat, dan Esai)
+      const quizData = [
+          // Bagian 1: Pilihan Ganda
+          {
+              type: "multiple-choice",
+              question: "Di organ manakah terjadi proses pencernaan secara mekanis menggunakan gigi?",
+              options: [
+                  { text: "A. Lambung", isCorrect: false },
+                  { text: "B. Mulut", isCorrect: true },
+                  { text: "C. Kerongkongan", isCorrect: false },
+                  { text: "D. Usus", isCorrect: false }
+              ],
+              explanation: "Pencernaan mekanis dengan bantuan gigi terjadi di dalam mulut untuk memotong dan menghancurkan makanan menjadi partikel yang lebih kecil."
+          },
+          {
+              type: "multiple-choice",
+              question: "Apa nama gerakan meremas dan mendorong makanan yang terjadi di kerongkongan menuju lambung?",
+              options: [
+                  { text: "A. Gerak kimiawi", isCorrect: false },
+                  { text: "B. Gerak statis", isCorrect: false },
+                  { text: "C. Gerak mekanis", isCorrect: false },
+                  { text: "D. Gerak Peristaltik", isCorrect: true }
+              ],
+              explanation: "Gerak peristaltik adalah gerakan otot bergelombang yang meremas dan mendorong makanan di sepanjang saluran kerongkongan sampai ke lambung."
+          },
+          {
+              type: "multiple-choice",
+              question: "Fungsi utama dari asam lambung (HCl) yang dihasilkan oleh lambung adalah...",
+              options: [
+                  { text: "A. Menyerap air", isCorrect: false },
+                  { text: "B. Membunuh kuman yang masuk bersama makanan", isCorrect: true },
+                  { text: "C. Menghaluskan makanan dengan gigi", isCorrect: false },
+                  { text: "D. Mengedarkan sari makanan ke darah", isCorrect: false }
+              ],
+              explanation: "Asam lambung bersifat sangat asam sehingga berfungsi vital untuk membunuh kuman, bakteri, atau virus berbahaya yang ikut tertelan bersama makanan."
+          },
+          {
+              type: "multiple-choice",
+              question: "Organ yang menjadi tempat utama penyerapan sari-sari makanan ke dalam darah adalah...",
+              options: [
+                  { text: "A. Usus Halus", isCorrect: true },
+                  { text: "B. Lambung", isCorrect: false },
+                  { text: "C. Kerongkongan", isCorrect: false },
+                  { text: "D. Usus besar", isCorrect: false }
+              ],
+              explanation: "Usus halus memiliki lipatan-lipatan kecil bernama vili (jonjot usus) yang berfungsi menyerap nutrisi dan sari makanan untuk dialirkan ke pembuluh darah."
+          },
+          {
+              type: "multiple-choice",
+              question: "Di dalam usus besar, terjadi proses penting yaitu...",
+              options: [
+                  { text: "A. Penyerapan karbohidrat ke paru-paru", isCorrect: false },
+                  { text: "B. Pengunyahan makanan secara mekanis", isCorrect: false },
+                  { text: "C. Penyerapan air dan pembusukan sisa makanan", isCorrect: true },
+                  { text: "D. Pencernaan secara kimiawi dengan enzim ludah", isCorrect: false }
+              ],
+              explanation: "Usus besar bertugas menyerap kembali sisa-sisa air pembentuk feses serta melakukan pembusukan ampas makanan berbantuan bakteri Escherichia coli."
+          },
+          // Bagian 2: Isian Singkat
+          {
+              type: "short-answer",
+              question: "Gerakan meremas-remas pada kerongkongan untuk mendorong makanan disebut gerakan...",
+              correctAnswers: ["peristaltik", "gerak peristaltik", "gerakan peristaltik"],
+              explanation: "Gerakan tersebut dinamakan gerakan peristaltik yang bekerja secara tidak sadar oleh otot polos saluran pencernaan."
+          },
+          {
+              type: "short-answer",
+              question: "Sisa ampas makanan yang tidak diserap tubuh akan dikeluarkan melalui...",
+              correctAnswers: ["anus"],
+              explanation: "Anus merupakan lubang pembuangan akhir dari saluran pencernaan tempat keluarnya feses (proses defekasi)."
+          },
+          {
+              type: "short-answer",
+              question: "Organ yang bentuknya seperti huruf J dan berfungsi mengaduk makanan adalah...",
+              correctAnswers: ["lambung"],
+              explanation: "Lambung adalah kantung berotot elastis mirip huruf J yang berfungsi mencampur, mengaduk, memecah makanan secara kimiawi."
+          },
+          // Bagian 3: Esai / Uraian
+          {
+              type: "essay",
+              question: "Jelaskan perbedaan antara pencernaan mekanis dan pencernaan kimiawi!",
+              explanation: "Kunci Jawaban Pembanding: Pencernaan mekanis menggunakan alat fisik seperti gigi dan kontraksi otot untuk menghancurkan ukuran makanan. Sedangkan pencernaan kimiawi menggunakan zat kimia berupa enzim untuk mengubah zat makanan kompleks menjadi molekul sederhana.",
+              bonusPoints: true // Esai disetujui memberikan poin mandiri setelah siswa membaca kunci evaluasi
+          },
+          {
+              type: "essay",
+              question: "Tuliskan urutan perjalanan makanan dari masuk ke mulut sampai keluar dari tubuh!",
+              explanation: "Kunci Jawaban Alur: Mulut → Kerongkongan → Lambung → Usus Halus → Usus Besar → Anus.",
+              bonusPoints: true
+          }
+      ];
+
+      let currentQuestionIndex = 0;
+      let correctAnswersCount = 0; 
+
+      const quizScreen = document.getElementById('quiz-screen');
+      const resultScreen = document.getElementById('result-screen');
+      const progressBarContainer = document.getElementById('progress-bar-container');
+      const progressFill = document.getElementById('progress-fill');
+      const questionNumberElem = document.getElementById('question-number');
+      const questionTextElem = document.getElementById('question-text');
+      const optionsContainerElem = document.getElementById('options-container');
+      const feedbackPanel = document.getElementById('feedback-panel');
+      const feedbackTitle = document.getElementById('feedback-title');
+      const feedbackText = document.getElementById('feedback-text');
+      const nextBtn = document.getElementById('next-btn');
+      
+      const audioCorrect = document.getElementById('audio-correct');
+      const audioWrong = document.getElementById('audio-wrong');
+
+      function loadQuestion() {
+          feedbackPanel.style.display = 'none';
+          nextBtn.style.display = 'none';
+          optionsContainerElem.innerHTML = '';
+
+          const progressPercent = (currentQuestionIndex / quizData.length) * 100;
+          progressFill.style.width = `${progressPercent}%`;
+
+          const currentQuestion = quizData[currentQuestionIndex];
+          questionNumberElem.innerText = `Soal ${currentQuestionIndex + 1} dari ${quizData.length}`;
+          questionTextElem.innerText = currentQuestion.question;
+
+          // Render tampilan berdasarkan jenis soal
+          if (currentQuestion.type === "multiple-choice") {
+              renderMultipleChoice(currentQuestion);
+          } else if (currentQuestion.type === "short-answer") {
+              renderShortAnswer(currentQuestion);
+          } else if (currentQuestion.type === "essay") {
+              renderEssay(currentQuestion);
+          }
+      }
+
+      function renderMultipleChoice(questionData) {
+          questionData.options.forEach((option) => {
+              const button = document.createElement('button');
+              button.innerText = option.text;
+              button.classList.add('option-btn');
+              button.addEventListener('click', () => selectMultipleChoiceAnswer(button, option.isCorrect));
+              optionsContainerElem.appendChild(button);
+          });
+      }
+
+      function renderShortAnswer(questionData) {
+          const container = document.createElement('div');
+          container.classList.add('input-container');
+
+          const input = document.createElement('input');
+          input.type = "text";
+          input.placeholder = "Ketik jawabanmu di sini...";
+          input.classList.add('text-answer-input');
+          input.id = "short-answer-field";
+
+          const submitBtn = document.createElement('button');
+          submitBtn.innerText = "Kirim Jawaban";
+          submitBtn.classList.add('submit-answer-btn');
+          submitBtn.onclick = () => checkShortAnswer(input.value.trim());
+
+          // Aktifkan kirim dengan menekan tombol 'Enter'
+          input.addEventListener('keypress', (e) => {
+              if (e.key === 'Enter' && input.value.trim() !== "") {
+                  checkShortAnswer(input.value.trim());
+              }
+          });
+
+          container.appendChild(input);
+          container.appendChild(submitBtn);
+          optionsContainerElem.appendChild(container);
+          input.focus();
+      }
+
+      function renderEssay(questionData) {
+          const container = document.createElement('div');
+          container.classList.add('input-container');
+
+          const textarea = document.createElement('textarea');
+          textarea.placeholder = "Tulis penjelasan lengkapmu di sini...";
+          textarea.classList.add('text-answer-input');
+          textarea.style.height = "100px";
+          textarea.style.resize = "none";
+          textarea.id = "essay-field";
+
+          const submitBtn = document.createElement('button');
+          submitBtn.innerText = "Simpan & Lihat Kunci Evaluasi";
+          submitBtn.classList.add('submit-answer-btn');
+          submitBtn.onclick = () => submitEssay();
+
+          container.appendChild(textarea);
+          container.appendChild(submitBtn);
+          optionsContainerElem.appendChild(container);
+          textarea.focus();
+      }
+
+      function selectMultipleChoiceAnswer(selectedButton, isCorrect) {
+          const currentQuestion = quizData[currentQuestionIndex];
+          const allButtons = optionsContainerElem.querySelectorAll('.option-btn');
+
+          allButtons.forEach(button => button.disabled = true);
+
+          if (isCorrect) {
+              selectedButton.classList.add('correct');
+              feedbackTitle.innerText = "Benar! 🎉";
+              feedbackTitle.className = "feedback-title correct-text";
+              feedbackPanel.className = "feedback-panel correct-style";
+              correctAnswersCount++;
+              
+              audioCorrect.currentTime = 0;
+              audioCorrect.play().catch(e => console.log("Audio diblokir"));
+          } else {
+              selectedButton.classList.add('wrong');
+              feedbackTitle.innerText = "Salah! ❌";
+              feedbackTitle.className = "feedback-title wrong-text";
+              feedbackPanel.className = "feedback-panel wrong-style";
+
+              allButtons.forEach((button, index) => {
+                  if (currentQuestion.options[index].isCorrect) {
+                      button.classList.add('correct');
+                  }
+              });
+
+              audioWrong.currentTime = 0;
+              audioWrong.play().catch(e => console.log("Audio diblokir"));
+          }
+
+          showFeedback(currentQuestion.explanation);
+      }
+
+      function checkShortAnswer(userAnswer) {
+          if (userAnswer === "") return;
+
+          const currentQuestion = quizData[currentQuestionIndex];
+          const inputField = document.getElementById('short-answer-field');
+          const submitBtn = optionsContainerElem.querySelector('.submit-answer-btn');
+
+          inputField.disabled = true;
+          submitBtn.disabled = true;
+
+          // Normalisasi teks input siswa agar tidak sensitif huruf besar/kecil
+          const isCorrect = currentQuestion.correctAnswers.includes(userAnswer.toLowerCase());
+
+          if (isCorrect) {
+              feedbackTitle.innerText = "Benar! 🎉";
+              feedbackTitle.className = "feedback-title correct-text";
+              feedbackPanel.className = "feedback-panel correct-style";
+              correctAnswersCount++;
+              
+              audioCorrect.currentTime = 0;
+              audioCorrect.play().catch(e => console.log("Audio diblokir"));
+          } else {
+              feedbackTitle.innerText = "Kurang Tepat! ❌";
+              feedbackTitle.className = "feedback-title wrong-text";
+              feedbackPanel.className = "feedback-panel wrong-style";
+              
+              audioWrong.currentTime = 0;
+              audioWrong.play().catch(e => console.log("Audio diblokir"));
+          }
+
+          showFeedback(`${currentQuestion.explanation} (Jawaban yang diterima: ${currentQuestion.correctAnswers[0]})`);
+      }
+
+      function submitEssay() {
+          const currentQuestion = quizData[currentQuestionIndex];
+          const essayField = document.getElementById('essay-field');
+          const submitBtn = optionsContainerElem.querySelector('.submit-answer-btn');
+
+          if (essayField.value.trim() === "") return;
+
+          essayField.disabled = true;
+          submitBtn.disabled = true;
+
+          // Mode esai mandiri, mengasumsikan siswa belajar mandiri dan mendapatkan poin apresiasi pengerjaan
+          feedbackTitle.innerText = "Jawaban Disimpan! 📝 Periksa kecocokan jawabanmu:";
+          feedbackTitle.className = "feedback-title info-text";
+          feedbackPanel.className = "feedback-panel info-style";
+          
+          if (currentQuestion.bonusPoints) {
+              correctAnswersCount++; 
+          }
+
+          audioCorrect.currentTime = 0;
+          audioCorrect.play().catch(e => console.log("Audio diblokir"));
+
+          showFeedback(currentQuestion.explanation);
+      }
+
+      function showFeedback(text) {
+          feedbackText.innerText = text;
+          feedbackPanel.style.display = 'block';
+
+          if (currentQuestionIndex === quizData.length - 1) {
+              nextBtn.innerText = "Lihat Hasil Akhir";
+          } else {
+              nextBtn.innerText = "Soal Berikutnya";
+          }
+          nextBtn.style.display = 'block';
+      }
+
+      function nextQuestion() {
+          currentQuestionIndex++;
+          if (currentQuestionIndex < quizData.length) {
+              loadQuestion();
+          } else {
+              showResult();
+          }
+      }
+
+      function showResult() {
+          progressFill.style.width = '100%';
+          quizScreen.style.display = 'none';
+          progressBarContainer.style.display = 'none';
+          resultScreen.style.display = 'block';
+
+          // Rumus Skor Dinamis: (Total Benar / Total Soal) * 100
+          const finalScore = Math.round((correctAnswersCount / quizData.length) * 100);
+          
+          document.getElementById('score-display').innerText = finalScore;
+          document.getElementById('result-summary').innerText = `Kamu berhasil menjawab ${correctAnswersCount} dari ${quizData.length} soal dengan benar.`;
+      }
+
+      function restartQuiz() {
+          currentQuestionIndex = 0;
+          correctAnswersCount = 0;
+          quizScreen.style.display = 'block';
+          progressBarContainer.style.display = 'block';
+          resultScreen.style.display = 'none';
+          loadQuestion();
+      }
+
+      window.onload = loadQuestion;
+  </script>
+</body>
+</html>

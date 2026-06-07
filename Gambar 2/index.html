@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <title>Template Ruang Objek WebAR</title>
+    
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Container Utama UI */
+        .ui-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 999;
+            pointer-events: none; /* Agar tidak menghalangi interaksi WebGL/AR */
+        }
+
+        /* Semua elemen interaktif di dalam UI harus mengaktifkan pointer-events */
+        .interactive {
+            pointer-events: auto;
+        }
+
+        /* 3. WATERMARK IDENTITAS (Pojok Kiri Atas) */
+        .watermark-card {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 10px 16px;
+            border-radius: 12px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+            max-width: 280px;
+        }
+
+        .watermark-logo {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            border-radius: 6px;
+        }
+
+        .watermark-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .watermark-title {
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        .watermark-subtitle {
+            color: #38bdf8;
+            font-size: 11px;
+            font-weight: 600;
+            margin: 2px 0 0 0;
+            text-transform: uppercase;
+        }
+
+        /* 3. TOMBOL UI (Pojok Kanan Bawah) */
+        .button-container {
+            position: absolute;
+            bottom: 24px;
+            right: 24px;
+            display: none; /* Tersembunyi default, muncul via JS saat marker terdeteksi */
+        }
+
+        .btn-info {
+            background: #0ea5e9;
+            color: #ffffff;
+            border: none;
+            padding: 14px 24px;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            border-radius: 50px; /* Pill-shaped */
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(14, 165, 233, 0.4);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-info:hover {
+            background: #0284c7;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(14, 165, 233, 0.6);
+        }
+
+        .btn-info:active {
+            transform: translateY(1px);
+        }
+
+        /* 3. MODAL BOX / INFO BOX (Center Screen) */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .modal-overlay.is-active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-box {
+            background: rgba(15, 23, 42, 0.9);
+            border: 2px solid #38bdf8;
+            border-radius: 16px;
+            width: 85%;
+            max-width: 450px;
+            padding: 24px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+            color: #f8fafc;
+        }
+
+        .modal-overlay.is-active .modal-box {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(56, 189, 248, 0.3);
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #38bdf8;
+            margin: 0;
+        }
+
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-size: 24px;
+            cursor: pointer;
+            line-height: 1;
+            padding: 0;
+            transition: color 0.2s;
+        }
+
+        .modal-close:hover {
+            color: #f1f5f9;
+        }
+
+        .modal-body {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #cbd5e1;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        /* Responsive Breakpoints untuk Mobile device */
+        @media (max-width: 480px) {
+            .watermark-card {
+                top: 12px;
+                left: 12px;
+                padding: 8px 12px;
+                max-width: 220px;
+            }
+            .watermark-logo {
+                width: 32px;
+                height: 32px;
+            }
+            .watermark-title { font-size: 11px; }
+            .watermark-subtitle { font-size: 9px; }
+            
+            .button-container {
+                bottom: 16px;
+                right: 16px;
+            }
+            .btn-info {
+                padding: 12px 20px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ui-container">
+        
+        <div class="watermark-card">
+            <img src="logo-watermark.png" alt="Logo" class="watermark-logo" onerror="this.style.display='none'">
+            <div class="watermark-text">
+                <h1 class="watermark-title">Proyek Kelompok</h1>
+                <h2 class="watermark-subtitle">Nama Kelas / Jurusan</h2>
+            </div>
+        </div>
+
+        <div class="button-container interactive" id="ui-btn-container">
+            <button class="btn-info" id="btn-open-info">BACA INFO OBJEK</button>
+        </div>
+
+    </div>
+
+    <div class="modal-overlay interactive" id="info-modal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 class="modal-title">Informasi Objek</h3>
+                <button class="modal-close" id="btn-close-info">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Selamat datang di Ruang Objek AR. Kotak dialog ini digunakan untuk mendeskripsikan secara detail model 3D yang sedang ditampilkan di atas marker.</p>
+                <p>Anda dapat mengubah teks paragraf ini dengan informasi edukatif, instruksi pengerjaan tugas, atau deskripsi komponen media pembelajaran yang sedang dirancang.</p>
+            </div>
+        </div>
+    </div>
+
+
+    <a-scene 
+        embedded 
+        vr-mode-ui="enabled: false" 
+        arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;">
+        
+        <a-assets>
+            <a-asset-item id="model-utama" src="Mulut.glb"></a-asset-item>
+        </a-assets>
+
+        <script>
+            // Mendaftarkan komponen kustom untuk mendeteksi status marker Hiro
+            AFRAME.registerComponent('marker-handler', {
+                init: function () {
+                    const marker = this.el;
+                    const infoButtonContainer = document.getElementById('ui-btn-container');
+
+                    // Event terpicu saat marker Hiro tertangkap kamera
+                    marker.addEventListener('markerFound', () => {
+                        infoButtonContainer.style.display = 'block';
+                    });
+
+                    // Event terpicu saat marker Hiro hilang dari fokus kamera
+                    marker.addEventListener('markerLost', () => {
+                        infoButtonContainer.style.display = 'none';
+                        // Menutup otomatis modal jika marker hilang demi kenyamanan user experience
+                        document.getElementById('info-modal').classList.remove('is-active');
+                    });
+                }
+            });
+        </script>
+
+        <a-marker preset="hiro" marker-handler>
+            
+            <a-entity 
+                gltf-model="#model-utama"
+                position="0 0.9 0"
+                scale="5 5 5"
+                animation="property: rotation; to: 0 360 0; loop: true; dur: 10000; easing: linear">
+                </a-entity>
+
+            <a-text 
+                value="usus / rektum" 
+                color="#38bdf8" 
+                align="center" 
+                position="0 2.2 0" 
+                scale="1.5 1.5 1.5"
+                font="monoid"
+                look-at="[camera]">
+                </a-text>
+
+        </a-marker>
+
+        <a-entity camera></a-entity>
+
+    </a-scene>
+
+
+    <script>
+        const modal = document.getElementById('info-modal');
+        const openBtn = document.getElementById('btn-open-info');
+        const closeBtn = document.getElementById('btn-close-info');
+
+        // Fungsi Membuka Jendela Informasi Objek
+        openBtn.addEventListener('click', () => {
+            modal.classList.add('is-active');
+        });
+
+        // Fungsi Menutup Jendela Informasi Objek via tombol close (X)
+        closeBtn.addEventListener('click', () => {
+            modal.classList.remove('is-active');
+        });
+
+        // Menutup jendela modal jika pengguna menyentuh area luar kotak informasi
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('is-active');
+            }
+        });
+    </script>
+
+</body>
+</html>

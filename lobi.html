@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lobi Eksplorasi - Sistem Pencernaan</title>
+    <style>
+        /* --- RESET & DASAR --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            /* Perpaduan warna latar belakang sesuai request: Biru muda (kiri atas), Hijau muda (tengah atas), Kuning/Krem (bawah & kanan) */
+            background: radial-gradient(circle at top left, #e0f2fe 0%, #dcfce7 40%, #fef9c3 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        /* --- UTAS PROFIL PENGEMBANG (Kanan Atas) --- */
+        .developer-profile {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 10px 15px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            z-index: 10;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .developer-profile img {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #0284c7;
+        }
+
+        .developer-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .developer-name {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #1e293b;
+        }
+
+        .developer-id {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        /* --- HEADER SECTIONS (Logo & Judul) --- */
+        header {
+            text-align: center;
+            margin-top: 80px; /* Memberi ruang agar tidak tertutup profil di HP */
+            margin-bottom: 40px;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .campus-logo {
+            height: 90px;
+            object-fit: contain;
+            margin-bottom: 20px;
+        }
+
+        /* Desain Judul Utama dengan Efek Bayangan Oranye & Sentuhan Merah */
+        .main-title {
+            font-size: 2.8rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: #ef4444; /* Warna Merah pada sebagian judul */
+            text-shadow: 3px 3px 0px #f97316; /* Bayangan Oranye */
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+
+        .main-title span {
+            color: #facc15; /* "SISTEM PENCERNAAN MANUSIA" berwarna Kuning */
+            text-shadow: 3px 3px 0px #f97316;
+        }
+
+        /* Sub-Judul berbentuk Gelembung Putih */
+        .subtitle-bubble {
+            display: inline-block;
+            background: #ffffff; /* Warna Putih */
+            color: #334155;
+            padding: 10px 25px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 500;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            margin-top: 10px;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+
+        /* --- CONTAINER MENU UTAMA --- */
+        .menu-container {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            margin-bottom: 40px;
+        }
+
+        /* --- TOMBOL MATERI (MENU UTAMA) --- */
+        .menu-btn {
+            width: 100%; /* Lebar penuh (Full Width) */
+            padding: 18px 25px;
+            background: #ffffff; /* Warna dasar putih */
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+        }
+
+        .btn-content {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* Icon penanda bawaan menggunakan visual folder */
+        .btn-icon {
+            font-size: 1.5rem;
+        }
+
+        .btn-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .arrow-icon {
+            font-size: 1.2rem;
+            color: #94a3b8;
+            transition: transform 0.3s ease;
+        }
+
+        /* --- EFEK HOVER INTERAKTIF GLOWING --- */
+        .menu-btn:hover {
+            transform: translateY(-5px); /* Sedikit terangkat ke atas */
+            box-shadow: 0 10px 20px rgba(2, 132, 199, 0.15), 0 0 15px rgba(2, 132, 199, 0.1); /* Bayangan lembut & glow */
+            border-color: #38bdf8;
+            background: #f8fafc;
+        }
+
+        .menu-btn:hover .arrow-icon {
+            transform: translateX(5px);
+            color: #38bdf8;
+        }
+
+        /* --- TOMBOL QUIZ (KONTRAS / NEON COCOK UNTUK AKHIR) --- */
+        .quiz-btn {
+            width: 100%;
+            padding: 20px;
+            background: #1e293b; /* Latar gelap agar warna neon menyala */
+            border: 2px solid #00e676; /* Border Hijau Neon */
+            border-radius: 16px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 230, 118, 0.1);
+        }
+
+        .quiz-btn:hover {
+            transform: translateY(-5px);
+            background: #00e676; /* Berubah penuh menjadi hijau neon */
+            color: #1e293b;
+            box-shadow: 0 0 25px #00e676, 0 0 10px rgba(0, 230, 118, 0.5); /* Glowing Hijau Neon kuat */
+            border-color: #00e676;
+        }
+
+        /* --- RESPONSIVITAS (HP/TABLET) --- */
+        @media (max-width: 600px) {
+            body {
+                padding: 15px;
+            }
+
+            .developer-profile {
+                position: relative;
+                top: 0;
+                right: 0;
+                width: 100%;
+                justify-content: center;
+                margin-bottom: 20px;
+                background: rgba(255, 255, 255, 0.85);
+            }
+
+            header {
+                margin-top: 10px;
+                margin-bottom: 30px;
+            }
+
+            .main-title {
+                font-size: 2rem;
+            }
+
+            .subtitle-bubble {
+                font-size: 0.85rem;
+                padding: 8px 18px;
+            }
+
+            .btn-text {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="developer-profile">
+        <img src="Foto.jpeg" alt="Foto Pengembang">
+        <div class="developer-info">
+            <span class="developer-name">Lis Anggreini</span>
+            <span class="developer-id">NIM. H0524301</span>
+        </div>
+    </div>
+
+    <header>
+        <img src="Logo.jpg" alt="Logo Kampus" class="campus-logo">
+        
+        <h1 class="main-title">E-Media <br><span>SISTEM PENCERNAAN MANUSIA</span></h1>
+        
+        <div class="subtitle-bubble">
+            Pilih menu di bawah ini untuk menampilkan Augmented Reality
+        </div>
+    </header>
+
+    <main class="menu-container">
+
+        <a href="Gambar 1/index.html" class="menu-btn">
+            <div class="btn-content">
+                <span class="btn-icon">📂</span>
+                <span class="btn-text">Augmented Reality 1</span>
+            </div>
+            <span class="arrow-icon">➜</span>
+        </a>
+
+        <a href="Gambar 2/index.html" class="menu-btn">
+            <div class="btn-content">
+                <span class="btn-icon">📂</span>
+                <span class="btn-text">Augmented Reality 2</span>
+            </div>
+            <span class="arrow-icon">➜</span>
+        </a>
+
+        <a href="Gambar 3/index.html" class="menu-btn">
+            <div class="btn-content">
+                <span class="btn-icon">📂</span>
+                <span class="btn-text">Augmented Reality 3</span>
+            </div>
+            <span class="arrow-icon">➜</span>
+        </a>
+
+        <a href="Gambar 4/index.html" class="menu-btn">
+            <div class="btn-content">
+                <span class="btn-icon">📂</span>
+                <span class="btn-text">Augmented Reality 4</span>
+            </div>
+            <span class="arrow-icon">➜</span>
+        </a>
+
+        <a href="QUIZZ/index.html" class="quiz-btn">
+            <span>📝</span> MULAI QUIZ INTERAKTIF
+        </a>
+
+    </main>
+
+</body>
+</html>
